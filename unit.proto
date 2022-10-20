@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package ring;
+
+service Unit 
+{
+	rpc sendMessage(sendMessageRequest) returns (sendMessageResponse) {}
+}
+
+message sendMessageRequest
+{
+	int32 receiverid = 1;
+	int32 senderid = 2;
+	string content  = 3;
+}
+
+message sendMessageResponse
+{
+	// calculated content length
+	int32 result = 1;
+}
