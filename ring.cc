@@ -1,4 +1,5 @@
 #include "CNode.h"
+#include "CLogger.h"
 
 #include <string>
 #include <thread>

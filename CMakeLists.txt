@@ -42,7 +42,7 @@ include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
 include_directories()
 
-set(node_src CNode.cc CUnit.cc CNode.h CUnit.h EDirection.h)
+set(node_src CNode.cc CUnit.cc CLogger.h CNode.h CUnit.h EDirection.h)
 
 # Targets (client|server)
 add_executable(ring ring.cc
