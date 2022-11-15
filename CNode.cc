@@ -57,7 +57,9 @@ void CNode::Run()
 {
     SendNodeIdMessage(m_nodeId);
 
-    while (true)
+    bool running = true;
+
+    while (running)
     {
         unique_lock<mutex> lock(m_mutex);
         m_conVariable.wait(lock, [&]{return !m_queue.empty();});
@@ -68,8 +70,34 @@ void CNode::Run()
         switch (message.m_type)
         {
             case CUnit::EMessageType::ShareNodeId:
+                switch (m_state)
+                {
+                    case EState::Candidate:
+                        if (message.m_nodeId > m_nodeId)
+                        {
+                            SendNodeIdMessage(m_nodeId);
+                        }
+                        else if (message.m_nodeId < m_nodeId)
+                        {
+                            m_state = EState::Defeated;
+                            SendNodeIdMessage(message.m_nodeId);
+                        }
+                        else
+                        {
+                            m_state = EState::Leader;
+                            SendLeaderElectedMessage(m_nodeId);
+                        }
+                        break;
+                    case EState::Defeated:
+                        SendNodeIdMessage(message.m_nodeId);
+                        break;
+                    default:
+                        break; //FIXME exception maybe?
+                }
                 break;
             case CUnit::EMessageType::LeaderElected:
+                m_state = EState::Terminated;
+                running = false;
                 break;
         }
     }
@@ -93,4 +121,9 @@ void CNode::SendNodeIdMessage(unsigned p_nodeId)
     thread([&]()
     { GetUnit(m_direction).SendNodeIdMessage(p_nodeId); });
     m_direction = m_direction == EDirection::Right ? EDirection::Left : EDirection::Right;
+}
+
+void CNode::SendLeaderElectedMessage(unsigned p_nodeId)
+{
+    // FIXME
 }

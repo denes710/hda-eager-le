@@ -49,6 +49,7 @@ namespace RING
 
             void Run();
             void SendNodeIdMessage(unsigned p_nodeId);
+            void SendLeaderElectedMessage(unsigned p_nodeId);
 
             CUnit& GetUnit(EDirection p_direction);
 
