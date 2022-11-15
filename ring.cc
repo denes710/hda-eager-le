@@ -58,12 +58,9 @@ int main(int argc, char* argv[])
 	// starting stubs
 	for (auto node : ring)
 		node->StartStub();
-
-	auto left = thread([&](){ring[0]->InjectMessage(EDirection::Left, leftNodeId, "Nothing left interesting");});
-	auto right = thread([&](){ring[0]->InjectMessage(EDirection::Right, rightNodeId, "Radical right");});
-
-	right.join();
-	left.join();
+	// starting stubs
+	for (auto node : ring)
+		node->StartHDAEagerLE();
 
 	// wait for keypress
 	int x;

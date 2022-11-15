@@ -26,7 +26,7 @@ namespace RING
 
             void ResultCallback(const std::string& p_content, unsigned p_result);
 
-            void InjectMessage(EDirection p_direction, unsigned p_receiverId, const std::string& p_content);
+            void StartHDAEagerLE();
 
             void ReceiveMessage(const std::string& p_content, unsigned p_result);
 

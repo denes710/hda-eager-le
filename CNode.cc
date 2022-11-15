@@ -24,7 +24,13 @@ CNode::CNode(unsigned p_nodeId,
             p_leftNeighbour,
             EDirection::Left,
             bind(&CNode::ReceiveMessage, this, _1, _2))
-{}
+{
+    std::cout << "NodeId: " << p_nodeId << std::endl;
+    std::cout << "p_rightSkeletonAddress: " << p_rightSkeletonAddress << std::endl;
+    std::cout << "p_leftSkeletonAddress: " << p_leftSkeletonAddress << std::endl;
+    std::cout << "p_rightNeighbour: " << p_rightNeighbour.m_nodeId << " p_rightNeighbour.add: " << p_rightNeighbour.m_addr << std::endl;
+    std::cout << "p_leftNeighbour: " << p_leftNeighbour.m_nodeId << " p_leftNeighbour.add: " << p_leftNeighbour.m_addr << std::endl;
+}
 
 void CNode::StartSkeleton()
 {
@@ -41,17 +47,10 @@ void CNode::StartStub()
 void CNode::ReceiveMessage(const string& p_content, unsigned p_result)
 {
     // FIXME deals with phases
+    // FIXME a queue and another thread are necessary
 }
 
-void CNode::InjectMessage(EDirection p_direction, unsigned p_receiverId, const std::string& p_content)
+void CNode::StartHDAEagerLE()
 {
-    switch (p_direction)
-    {
-        case EDirection::Right:
-            m_rightUnit.InjectMessage(p_receiverId, p_content);
-            break;
-        case EDirection::Left:
-            m_leftUnit.InjectMessage(p_receiverId, p_content);
-            break;
-    }
+    // FIXME just start the first phase
 }

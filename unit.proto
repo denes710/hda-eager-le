@@ -4,18 +4,15 @@ package ring;
 
 service Unit 
 {
-	rpc sendMessage(sendMessageRequest) returns (sendMessageResponse) {}
+	rpc sendNodeIdMessage(sendNodeIdMessageRequest) returns (sendNodeIdMessageResponse) {}
 }
 
-message sendMessageRequest
+message sendNodeIdMessageRequest
 {
-	int32 receiverid = 1;
-	int32 senderid = 2;
-	string content  = 3;
+	uint32 sender_id = 1;
+	uint32 node_id  = 2;
 }
 
-message sendMessageResponse
+message sendNodeIdMessageResponse
 {
-	// calculated content length
-	int32 result = 1;
 }

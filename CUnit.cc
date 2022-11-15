@@ -5,65 +5,40 @@ using namespace RING;
 using namespace grpc;
 using namespace std;
 
-unsigned CUnit::SendMessage(unsigned p_receiverId, unsigned p_senderId, const string& p_content)
+void CUnit::SendNodeIdMessage(unsigned p_nodeId)
 {
     m_logger->AddLog(m_nodeId, m_nodeId, m_neighbour.m_nodeId);
 
     // assemble request
-    ring::sendMessageRequest request;
-    request.set_receiverid(p_receiverId);
-    request.set_senderid(p_senderId);
-    request.set_content(p_content);
+    ring::sendNodeIdMessageRequest request;
+    request.set_sender_id(m_nodeId);
+    request.set_node_id(p_nodeId);
 
     // container for server response
-    ring::sendMessageResponse reply;
+    // FIXME perhaps it is not necessary
+    ring::sendNodeIdMessageResponse reply;
     // Context can be used to send meta data to server or modify RPC behaviour
     ClientContext context;
     // Actual Remote Procedure Call
-    const auto status = m_stub->sendMessage(&context, request, &reply);
+    const auto status = m_stub->sendNodeIdMessage(&context, request, &reply);
 
     // Returns results based on RPC status
     if (!status.ok())
     {
         throw exception();
     }
-
-    return reply.result();
 }
 
-Status CUnit::sendMessage(ServerContext* p_context,
-        const ring::sendMessageRequest* p_request,
-        ring::sendMessageResponse* p_reply)
+Status CUnit::sendNodeIdMessage(ServerContext* p_context,
+        const ring::sendNodeIdMessageRequest* p_request,
+        ring::sendNodeIdMessageResponse* p_reply)
 {
-    m_logger->AddLog(m_nodeId, p_request->senderid(), m_nodeId);
+    m_logger->AddLog(m_nodeId, p_request->sender_id(), m_nodeId);
+    
+    // TODO callback Node
 
-    // message is for this node
-    if (p_request->receiverid() == m_nodeId)
-    {
-        // delivered
-        p_reply->set_result(p_request->content().length());
-    }
-    else
-    {
-        auto result = 0u;
-
-        {
-            const lock_guard<mutex> guard(m_mutex);
-            result = SendMessage(p_request->receiverid(),
-                    p_request->senderid(),
-                    p_request->content());
-        }
-
-        p_reply->set_result(result);
-    }
     // message processed
     return Status::OK;
-}
-
-void CUnit::InjectMessage(unsigned p_receiverId, const string& p_content)
-{
-    const lock_guard<mutex> guard(m_mutex);
-    m_callback(p_content, SendMessage(p_receiverId, m_nodeId, p_content));
 }
 
 void CUnit::CreateSkeleton()

@@ -38,14 +38,12 @@ namespace RING
             {}
 
             // send messag to neighbour stub
-            unsigned SendMessage(unsigned p_receiverId, unsigned p_senderId, const std::string& p_content);
+            void SendNodeIdMessage(unsigned p_nodeId);
 
             // receives message from neighbour stub
-            grpc::Status sendMessage(grpc::ServerContext* p_context,
-                    const ring::sendMessageRequest* p_request,
-                    ring::sendMessageResponse* p_reply) override;
-
-            void InjectMessage(unsigned p_receiverId, const std::string& p_content);
+            grpc::Status sendNodeIdMessage(grpc::ServerContext* p_context,
+                    const ring::sendNodeIdMessageRequest* p_request,
+                    ring::sendNodeIdMessageResponse* p_reply) override;
 
             void CreateSkeleton();
 
@@ -57,7 +55,6 @@ namespace RING
         private:
             //FIXME make it readable
             const unsigned m_nodeId;
-            std::mutex m_mutex;
             const SNeighbour m_neighbour;
             std::unique_ptr<ring::Unit::Stub> m_stub;
             std::shared_ptr<grpc::Channel> m_channel;
