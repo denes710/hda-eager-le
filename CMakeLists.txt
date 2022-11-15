@@ -40,13 +40,16 @@ add_custom_command(
 # Include generated *.pb.h files
 include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
+include_directories()
+
+set(node_src CNode.cc CUnit.cc CNode.h CUnit.h EDirection.h)
+
 # Targets (client|server)
-foreach(_target ring)
-  add_executable(${_target} "${_target}.cc"
+add_executable(ring ring.cc
     ${hw_proto_srcs}
-    ${hw_grpc_srcs})
-  target_link_libraries(${_target}
+    ${hw_grpc_srcs}
+    ${node_src})
+target_link_libraries(ring
     ${_REFLECTION}
     ${_GRPC_GRPCPP}
     ${_PROTOBUF_LIBPROTOBUF})
-endforeach()
