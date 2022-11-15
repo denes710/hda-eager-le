@@ -5,22 +5,22 @@ using namespace RING;
 using namespace grpc;
 using namespace std;
 
-void CUnit::SendNodeIdMessage(unsigned p_nodeId)
+void CUnit::SendNodeId(unsigned p_nodeId)
 {
     m_logger->AddLog(m_nodeId, m_nodeId, m_neighbour.m_nodeId);
 
     // assemble request
-    ring::sendNodeIdMessageRequest request;
+    ring::sendNodeIdRequest request;
     request.set_sender_id(m_nodeId);
     request.set_node_id(p_nodeId);
 
     // container for server response
     // FIXME perhaps it is not necessary
-    ring::sendNodeIdMessageResponse reply;
+    ring::sendNodeIdResponse reply;
     // Context can be used to send meta data to server or modify RPC behaviour
     ClientContext context;
     // Actual Remote Procedure Call
-    const auto status = m_stub->sendNodeIdMessage(&context, request, &reply);
+    const auto status = m_stub->sendNodeId(&context, request, &reply);
 
     // Returns results based on RPC status
     if (!status.ok())
@@ -29,9 +29,9 @@ void CUnit::SendNodeIdMessage(unsigned p_nodeId)
     }
 }
 
-Status CUnit::sendNodeIdMessage(ServerContext* p_context,
-        const ring::sendNodeIdMessageRequest* p_request,
-        ring::sendNodeIdMessageResponse* p_reply)
+Status CUnit::sendNodeId(ServerContext* p_context,
+        const ring::sendNodeIdRequest* p_request,
+        ring::sendNodeIdResponse* p_reply)
 {
     m_logger->AddLog(m_nodeId, p_request->sender_id(), m_nodeId);
 

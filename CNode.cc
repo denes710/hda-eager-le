@@ -119,7 +119,7 @@ CUnit& CNode::GetUnit(EDirection p_direction)
 void CNode::SendNodeIdMessage(unsigned p_nodeId)
 {
     thread([&]()
-    { GetUnit(m_direction).SendNodeIdMessage(p_nodeId); });
+    { GetUnit(m_direction).SendNodeId(p_nodeId); });
     m_direction = m_direction == EDirection::Right ? EDirection::Left : EDirection::Right;
 }
 

@@ -44,12 +44,12 @@ namespace RING
             {}
 
             // send messag to neighbour stub
-            void SendNodeIdMessage(unsigned p_nodeId);
+            void SendNodeId(unsigned p_nodeId);
 
             // receives message from neighbour stub
-            grpc::Status sendNodeIdMessage(grpc::ServerContext* p_context,
-                    const ring::sendNodeIdMessageRequest* p_request,
-                    ring::sendNodeIdMessageResponse* p_reply) override;
+            grpc::Status sendNodeId(grpc::ServerContext* p_context,
+                    const ring::sendNodeIdRequest* p_request,
+                    ring::sendNodeIdResponse* p_reply) override;
 
             void CreateSkeleton();
 

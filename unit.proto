@@ -4,15 +4,15 @@ package ring;
 
 service Unit 
 {
-	rpc sendNodeIdMessage(sendNodeIdMessageRequest) returns (sendNodeIdMessageResponse) {}
+	rpc sendNodeId(sendNodeIdRequest) returns (sendNodeIdResponse) {}
 }
 
-message sendNodeIdMessageRequest
+message sendNodeIdRequest
 {
 	uint32 sender_id = 1;
 	uint32 node_id  = 2;
 }
 
-message sendNodeIdMessageResponse
+message sendNodeIdResponse
 {
 }
