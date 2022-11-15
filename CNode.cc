@@ -24,13 +24,7 @@ CNode::CNode(unsigned p_nodeId,
             p_leftNeighbour,
             EDirection::Left,
             bind(&CNode::ReceiveMessage, this, _1, _2))
-{
-    std::cout << "NodeId: " << p_nodeId << std::endl;
-    std::cout << "p_rightSkeletonAddress: " << p_rightSkeletonAddress << std::endl;
-    std::cout << "p_leftSkeletonAddress: " << p_leftSkeletonAddress << std::endl;
-    std::cout << "p_rightNeighbour: " << p_rightNeighbour.m_nodeId << " p_rightNeighbour.add: " << p_rightNeighbour.m_addr << std::endl;
-    std::cout << "p_leftNeighbour: " << p_leftNeighbour.m_nodeId << " p_leftNeighbour.add: " << p_leftNeighbour.m_addr << std::endl;
-}
+{}
 
 void CNode::StartSkeleton()
 {
@@ -44,13 +38,59 @@ void CNode::StartStub()
     m_leftUnit.StartStub();
 }
 
-void CNode::ReceiveMessage(const string& p_content, unsigned p_result)
+void CNode::ReceiveMessage(CUnit::EMessageType p_type, unsigned p_nodeId)
 {
-    // FIXME deals with phases
-    // FIXME a queue and another thread are necessary
+    {
+        lock_guard<mutex> lock(m_mutex);
+        m_queue.push({p_type, p_nodeId});
+    }
+
+    m_conVariable.notify_one();
 }
 
-void CNode::StartHDAEagerLE()
+void CNode::RunHDAEagerLE()
 {
-    // FIXME just start the first phase
+    m_thread = thread([&](){ Run(); });
+}
+
+void CNode::Run()
+{
+    SendNodeIdMessage(m_nodeId);
+
+    while (true)
+    {
+        unique_lock<mutex> lock(m_mutex);
+        m_conVariable.wait(lock, [&]{return !m_queue.empty();});
+
+        const auto message = m_queue.front();
+        m_queue.pop();
+
+        switch (message.m_type)
+        {
+            case CUnit::EMessageType::ShareNodeId:
+                break;
+            case CUnit::EMessageType::LeaderElected:
+                break;
+        }
+    }
+}
+
+CUnit& CNode::GetUnit(EDirection p_direction)
+{
+    switch (p_direction)
+    {
+        case EDirection::Right:
+            return m_rightUnit;
+        case EDirection::Left:
+            return m_leftUnit;
+    }
+    
+    return m_rightUnit;
+}
+
+void CNode::SendNodeIdMessage(unsigned p_nodeId)
+{
+    thread([&]()
+    { GetUnit(m_direction).SendNodeIdMessage(p_nodeId); });
+    m_direction = m_direction == EDirection::Right ? EDirection::Left : EDirection::Right;
 }

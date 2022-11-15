@@ -60,7 +60,7 @@ int main(int argc, char* argv[])
 		node->StartStub();
 	// starting stubs
 	for (auto node : ring)
-		node->StartHDAEagerLE();
+		node->RunHDAEagerLE();
 
 	// wait for keypress
 	int x;

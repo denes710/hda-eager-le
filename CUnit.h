@@ -16,13 +16,19 @@ namespace RING
     class CUnit : public ring::Unit::Service
     {
         public:
+            enum class EMessageType
+            {
+                ShareNodeId,
+                LeaderElected
+            };
+
             struct SNeighbour
             {
                 unsigned m_nodeId;
                 std::string m_addr;
             };
         
-            using TCallback = std::function<void(std::string, unsigned)>;
+            using TCallback = std::function<void(EMessageType, unsigned)>;
             CUnit(unsigned p_nodeId,
                     const std::shared_ptr<CLogger>& p_logger,
                     const std::string& p_skeletonAddress,

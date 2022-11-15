@@ -34,8 +34,8 @@ Status CUnit::sendNodeIdMessage(ServerContext* p_context,
         ring::sendNodeIdMessageResponse* p_reply)
 {
     m_logger->AddLog(m_nodeId, p_request->sender_id(), m_nodeId);
-    
-    // TODO callback Node
+
+    m_callback(EMessageType::ShareNodeId, p_request->node_id());
 
     // message processed
     return Status::OK;

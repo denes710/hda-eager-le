@@ -4,9 +4,11 @@
 #include "CUnit.h"
 #include "CLogger.h"
 
+#include <condition_variable>
 #include <mutex>
 #include <string>
 #include <vector>
+#include <queue>
 
 namespace RING
 {
@@ -26,14 +28,40 @@ namespace RING
 
             void ResultCallback(const std::string& p_content, unsigned p_result);
 
-            void StartHDAEagerLE();
+            void RunHDAEagerLE();
 
-            void ReceiveMessage(const std::string& p_content, unsigned p_result);
+            void ReceiveMessage(CUnit::EMessageType p_type, unsigned m_nodeId);
 
         private:
+            enum class EState
+            {
+                Candidate,
+                Defeated,
+                Leader,
+                Terminated
+            };
+
+            struct SMessage
+            {
+                CUnit::EMessageType m_type;
+                unsigned m_nodeId;
+            };
+
+            void Run();
+            void SendNodeIdMessage(unsigned p_nodeId);
+
+            CUnit& GetUnit(EDirection p_direction);
+
             const unsigned m_nodeId;
             CUnit m_rightUnit;
             CUnit m_leftUnit;
+
+            EState m_state = EState::Candidate;
+            EDirection m_direction = EDirection::Right;
+            std::queue<SMessage> m_queue;
+            std::mutex m_mutex;
+            std::condition_variable m_conVariable;
+            std::thread m_thread;
     };
 }
 
