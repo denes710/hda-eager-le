@@ -28,7 +28,7 @@ namespace RING
 
             void RunHDAEagerLE();
 
-            void ReceiveMessage(CUnit::EMessageType p_type, unsigned m_nodeId, EDirection p_direction);
+            void ReceiveMessage(CUnit::EMessageType p_type, unsigned p_nodeId, EDirection p_direction);
 
             ~CNode()
             { m_thread.join(); }
