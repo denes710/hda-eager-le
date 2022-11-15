@@ -7,6 +7,8 @@ using namespace std;
 
 unsigned CUnit::SendMessage(unsigned p_receiverId, unsigned p_senderId, const string& p_content)
 {
+    m_logger->AddLog(m_nodeId, m_nodeId, m_neighbour.m_nodeId);
+
     // assemble request
     ring::sendMessageRequest request;
     request.set_receiverid(p_receiverId);
@@ -33,6 +35,8 @@ Status CUnit::sendMessage(ServerContext* p_context,
         const ring::sendMessageRequest* p_request,
         ring::sendMessageResponse* p_reply)
 {
+    m_logger->AddLog(m_nodeId, p_request->senderid(), m_nodeId);
+
     // message is for this node
     if (p_request->receiverid() == m_nodeId)
     {
@@ -87,6 +91,6 @@ void CUnit::StartSkeleton()
 void CUnit::StartStub()
 {
     // Instantiates the client
-    m_channel =  grpc::CreateChannel(m_neighborAddress, grpc::InsecureChannelCredentials());
+    m_channel =  grpc::CreateChannel(m_neighbour.m_addr, grpc::InsecureChannelCredentials());
     m_stub = ring::Unit::NewStub(m_channel);
 }

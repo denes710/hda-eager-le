@@ -8,6 +8,8 @@
 #include <mutex>
 #include <chrono>
 #include <ctime>
+#include <iomanip>
+#include <iostream>
 
 namespace RING
 {
@@ -22,11 +24,15 @@ namespace RING
             {
                 const std::lock_guard<std::mutex> guard(m_mutex);
 
-                // FIXME maybe better option
                 const auto now = std::chrono::system_clock::now();
-                std::time_t nowTime = std::chrono::system_clock::to_time_t(now);
+                const auto nowAsTimeT = std::chrono::system_clock::to_time_t(now);
+                const auto nowMs = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()) % 1000;
 
-                m_outfile << "<" << p_nodeId << ", " << std::ctime(&nowTime) << ", " << p_senderId << ", " <<
+                std::stringstream nowSs;
+                nowSs << std::put_time(std::localtime(&nowAsTimeT), "%a %b %d %Y %T") <<
+                    '.' << std::setfill('0') << std::setw(3) << nowMs.count();;
+
+                m_outfile << "<" << p_nodeId << ", " << nowSs.str() << ", " << p_senderId << ", " <<
                     p_receiverId << ">" << std::endl; 
             }
 

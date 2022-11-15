@@ -6,21 +6,24 @@ using namespace std;
 using namespace std::placeholders;
 
 CNode::CNode(unsigned p_nodeId,
+        const shared_ptr<CLogger>& p_logger,
         const std::string& p_rightSkeletonAddress,
         const std::string& p_leftSkeletonAddress,
-        const std::string& p_rightNeighborAddress,
-        const std::string& p_leftNeighborAddress)
+        const CUnit::SNeighbour& p_rightNeighbour,
+        const CUnit::SNeighbour& p_leftNeighbour)
     : m_nodeId(p_nodeId)
     , m_rightUnit(m_nodeId,
+            p_logger,
             p_rightSkeletonAddress,
-            p_rightNeighborAddress,
+            p_rightNeighbour,
             EDirection::Right,
-            bind(&CNode::ResultCallback, this, _1, _2))
+            bind(&CNode::ReceiveMessage, this, _1, _2))
     , m_leftUnit(m_nodeId,
+            p_logger,
             p_leftSkeletonAddress,
-            p_leftNeighborAddress,
+            p_leftNeighbour,
             EDirection::Left,
-            bind(&CNode::ResultCallback, this, _1, _2))
+            bind(&CNode::ReceiveMessage, this, _1, _2))
 {}
 
 void CNode::StartSkeleton()
@@ -35,10 +38,9 @@ void CNode::StartStub()
     m_leftUnit.StartStub();
 }
 
-void CNode::ResultCallback(const std::string& p_content, unsigned p_result)
+void CNode::ReceiveMessage(const string& p_content, unsigned p_result)
 {
-    const lock_guard<mutex> guard(m_resultMutex);
-    m_result.push_back(make_pair(p_content, p_result));
+    // FIXME deals with phases
 }
 
 void CNode::InjectMessage(EDirection p_direction, unsigned p_receiverId, const std::string& p_content)

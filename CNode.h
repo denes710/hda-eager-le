@@ -2,6 +2,7 @@
 #define RING_CNODE_H
 
 #include "CUnit.h"
+#include "CLogger.h"
 
 #include <mutex>
 #include <string>
@@ -12,13 +13,12 @@ namespace RING
     class CNode
     {
         public:
-            using TResult = std::vector<std::pair<std::string, unsigned>>;
-
             CNode(unsigned p_nodeId,
+                    const std::shared_ptr<CLogger>& p_logger,
                     const std::string& p_rightSkeletonAddress,
                     const std::string& p_leftSkeletonAddress,
-                    const std::string& p_rightNeighborAddress,
-                    const std::string& p_leftNeighborAddress);
+                    const CUnit::SNeighbour& p_rightNeighbour,
+                    const CUnit::SNeighbour& p_leftNeighbour);
 
             void StartSkeleton();
 
@@ -28,19 +28,12 @@ namespace RING
 
             void InjectMessage(EDirection p_direction, unsigned p_receiverId, const std::string& p_content);
 
-            const TResult& GetResult() const
-            { return m_result; }
-
-            unsigned GetNodeId() const
-            { return m_nodeId; }
+            void ReceiveMessage(const std::string& p_content, unsigned p_result);
 
         private:
             const unsigned m_nodeId;
             CUnit m_rightUnit;
             CUnit m_leftUnit;
-
-            std::mutex m_resultMutex;
-            TResult m_result;
     };
 }
 

@@ -37,14 +37,19 @@ int main(int argc, char* argv[])
 		return ss.str();
 	};
 
+    auto logger = make_shared<CLogger>("log");
+
 	// creating nodes
 	for (auto i = 0u; i < nodeCount; ++i)
 	{
+        const auto rightId = (i + 1) % nodeCount;
+        const auto leftId = (i + nodeCount - 1) % nodeCount;
 		ring.emplace_back(make_shared<CNode>(i,
+                    logger,
 					getAddress(portNum + i), // right skeleton addr
 					getAddress(portNum + i + nodeCount), // left skeleton addr
-					getAddress(portNum + (i + 1) % nodeCount), // right neighbor
-					getAddress(portNum + (i + nodeCount - 1) % nodeCount + nodeCount))); // left neighbor
+					CUnit::SNeighbour{rightId, getAddress(portNum + rightId)}, // right neighbor
+					CUnit::SNeighbour{leftId, getAddress(portNum + leftId + nodeCount)})); // left neighbor
 	}
 
 	// starting skeletons
@@ -59,20 +64,6 @@ int main(int argc, char* argv[])
 
 	right.join();
 	left.join();
-
-	for (const auto& node : ring)
-	{
-		cout << "Node " << node->GetNodeId() << " values: " << endl;
-		const auto result = node->GetResult();
-		if (result.empty())
-		{
-			cout << "nothing" << endl;
-			continue;
-		}
-		
-		for (const auto& pair : result)
-			cout << "content: " << pair.first << " response: " << pair.second << endl;
-	}
 
 	// wait for keypress
 	int x;
