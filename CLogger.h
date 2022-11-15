@@ -22,7 +22,7 @@ namespace RING
 
             void AddLog(unsigned p_nodeId, unsigned p_senderId, unsigned p_receiverId)
             {
-                const std::lock_guard<std::mutex> guard(m_mutex);
+                std::lock_guard<std::mutex> guard(m_mutex);
 
                 const auto now = std::chrono::system_clock::now();
                 const auto nowAsTimeT = std::chrono::system_clock::to_time_t(now);
@@ -30,10 +30,10 @@ namespace RING
 
                 std::stringstream nowSs;
                 nowSs << std::put_time(std::localtime(&nowAsTimeT), "%a %b %d %Y %T") <<
-                    '.' << std::setfill('0') << std::setw(3) << nowMs.count();;
+                    '.' << std::setfill('0') << std::setw(3) << nowMs.count();
 
                 m_outfile << "<" << p_nodeId << ", " << nowSs.str() << ", " << p_senderId << ", " <<
-                    p_receiverId << ">" << std::endl; 
+                    p_receiverId << ">" << std::endl;
             }
 
         private:
