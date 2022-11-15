@@ -51,6 +51,14 @@ namespace RING
                     const ring::sendNodeIdRequest* p_request,
                     ring::sendNodeIdResponse* p_reply) override;
 
+            // send messag to neighbour stub
+            void SendLeaderElected(unsigned p_leaderId);
+
+            // receives message from neighbour stub
+            grpc::Status sendLeaderElected(grpc::ServerContext* p_context,
+                    const ring::sendLeaderElectedRequest* p_request,
+                    ring::sendLeaderElectedResponse* p_reply) override;
+
             void CreateSkeleton();
 
             // creating a single thread serving as skeleton

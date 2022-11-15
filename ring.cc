@@ -22,8 +22,6 @@ int main(int argc, char* argv[])
 	};
 
 	const auto nodeCount = readInputNumber("Insert number of nodes: ");
-	const auto leftNodeId = readInputNumber("Insert left reciever node id: ");
-	const auto rightNodeId = readInputNumber("Insert right reciever node id: ");
 
 	const auto portNum = 60000u;
 	const auto ip = "127.0.0.1";
@@ -61,6 +59,8 @@ int main(int argc, char* argv[])
 	// starting stubs
 	for (auto node : ring)
 		node->RunHDAEagerLE();
+
+    cout << "Waiting for the result";
 
 	// wait for keypress
 	int x;

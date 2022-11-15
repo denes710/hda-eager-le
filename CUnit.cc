@@ -69,3 +69,37 @@ void CUnit::StartStub()
     m_channel =  grpc::CreateChannel(m_neighbour.m_addr, grpc::InsecureChannelCredentials());
     m_stub = ring::Unit::NewStub(m_channel);
 }
+
+void CUnit::SendLeaderElected(unsigned p_leaderId)
+{
+    m_logger->AddLog(m_nodeId, m_nodeId, m_neighbour.m_nodeId);
+
+    // assemble request
+    ring::sendLeaderElectedRequest request;
+    request.set_sender_id(m_nodeId);
+    request.set_leader_id(p_leaderId);
+
+    // container for server response
+    // FIXME perhaps it is not necessary
+    ring::sendLeaderElectedResponse reply;
+    // Context can be used to send meta data to server or modify RPC behaviour
+    ClientContext context;
+    // Actual Remote Procedure Call
+    const auto status = m_stub->sendLeaderElected(&context, request, &reply);
+
+    // Returns results based on RPC status
+    if (!status.ok())
+        throw exception();
+}
+
+Status CUnit::sendLeaderElected(ServerContext* p_context,
+        const ring::sendLeaderElectedRequest* p_request,
+        ring::sendLeaderElectedResponse* p_reply)
+{
+    m_logger->AddLog(m_nodeId, p_request->sender_id(), m_nodeId);
+
+    m_callback(EMessageType::LeaderElected, p_request->leader_id());
+
+    // message processed
+    return Status::OK;
+}

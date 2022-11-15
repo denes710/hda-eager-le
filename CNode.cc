@@ -17,13 +17,13 @@ CNode::CNode(unsigned p_nodeId,
             p_rightSkeletonAddress,
             p_rightNeighbour,
             EDirection::Right,
-            bind(&CNode::ReceiveMessage, this, _1, _2))
+            bind(&CNode::ReceiveMessage, this, _1, _2, EDirection::Right))
     , m_leftUnit(m_nodeId,
             p_logger,
             p_leftSkeletonAddress,
             p_leftNeighbour,
             EDirection::Left,
-            bind(&CNode::ReceiveMessage, this, _1, _2))
+            bind(&CNode::ReceiveMessage, this, _1, _2, EDirection::Left))
 {}
 
 void CNode::StartSkeleton()
@@ -38,11 +38,11 @@ void CNode::StartStub()
     m_leftUnit.StartStub();
 }
 
-void CNode::ReceiveMessage(CUnit::EMessageType p_type, unsigned p_nodeId)
+void CNode::ReceiveMessage(CUnit::EMessageType p_type, unsigned p_nodeId, EDirection p_direction)
 {
     {
         lock_guard<mutex> lock(m_mutex);
-        m_queue.push({p_type, p_nodeId});
+        m_queue.push({p_type, p_nodeId, p_direction});
     }
 
     m_conVariable.notify_one();
@@ -80,12 +80,11 @@ void CNode::Run()
                         else if (message.m_nodeId < m_nodeId)
                         {
                             m_state = EState::Defeated;
-                            SendNodeIdMessage(message.m_nodeId);
                         }
                         else
                         {
                             m_state = EState::Leader;
-                            SendLeaderElectedMessage(m_nodeId);
+                            SendLeaderElectedMessage(m_nodeId, EDirection::Both);
                         }
                         break;
                     case EState::Defeated:
@@ -96,6 +95,7 @@ void CNode::Run()
                 }
                 break;
             case CUnit::EMessageType::LeaderElected:
+                SendLeaderElectedMessage(message.m_nodeId, GetInverse(message.m_fromDirection));
                 m_state = EState::Terminated;
                 running = false;
                 break;
@@ -118,12 +118,27 @@ CUnit& CNode::GetUnit(EDirection p_direction)
 
 void CNode::SendNodeIdMessage(unsigned p_nodeId)
 {
-    thread([&]()
-    { GetUnit(m_direction).SendNodeId(p_nodeId); });
-    m_direction = m_direction == EDirection::Right ? EDirection::Left : EDirection::Right;
+    thread tmp([&, direction = m_direction, nodeId = p_nodeId]()
+    { GetUnit(direction).SendNodeId(nodeId); });
+    tmp.detach();
+    m_direction = GetInverse(m_direction);
 }
 
-void CNode::SendLeaderElectedMessage(unsigned p_nodeId)
+void CNode::SendLeaderElectedMessage(unsigned p_nodeId, EDirection p_direction)
 {
-    // FIXME
+    if (p_direction == EDirection::Both)
+    {
+        thread tmpRight([&, nodeId = p_nodeId]()
+        { m_rightUnit.SendLeaderElected(nodeId); });
+        tmpRight.detach();
+        thread tmpLeft([&, nodeId = p_nodeId]()
+        { m_leftUnit.SendLeaderElected(nodeId); });
+        tmpLeft.detach();
+
+        return;
+    }
+
+    thread tmp([&, direction = m_direction, nodeId = p_nodeId]()
+    { GetUnit(direction).SendLeaderElected(nodeId); });
+    tmp.detach();
 }

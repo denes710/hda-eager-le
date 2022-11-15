@@ -26,11 +26,12 @@ namespace RING
 
             void StartStub();
 
-            void ResultCallback(const std::string& p_content, unsigned p_result);
-
             void RunHDAEagerLE();
 
-            void ReceiveMessage(CUnit::EMessageType p_type, unsigned m_nodeId);
+            void ReceiveMessage(CUnit::EMessageType p_type, unsigned m_nodeId, EDirection p_direction);
+
+            ~CNode()
+            { m_thread.join(); }
 
         private:
             enum class EState
@@ -45,11 +46,13 @@ namespace RING
             {
                 CUnit::EMessageType m_type;
                 unsigned m_nodeId;
+                // FIXME new structs with visitor pattern, because it is only for LeaderElected type 
+                EDirection m_fromDirection;
             };
 
             void Run();
             void SendNodeIdMessage(unsigned p_nodeId);
-            void SendLeaderElectedMessage(unsigned p_nodeId);
+            void SendLeaderElectedMessage(unsigned p_nodeId, EDirection p_direction);
 
             CUnit& GetUnit(EDirection p_direction);
 

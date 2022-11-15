@@ -5,6 +5,8 @@ package ring;
 service Unit 
 {
 	rpc sendNodeId(sendNodeIdRequest) returns (sendNodeIdResponse) {}
+
+    rpc sendLeaderElected(sendLeaderElectedRequest) returns (sendLeaderElectedResponse) {}
 }
 
 message sendNodeIdRequest
@@ -14,5 +16,15 @@ message sendNodeIdRequest
 }
 
 message sendNodeIdResponse
+{
+}
+
+message sendLeaderElectedRequest
+{
+	uint32 sender_id = 1;
+	uint32 leader_id  = 2;
+}
+
+message sendLeaderElectedResponse
 {
 }
