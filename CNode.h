@@ -46,11 +46,11 @@ namespace RING
                 CUnit::EMessageType m_type;
                 unsigned m_nodeId;
                 // FIXME new structs with visitor pattern, because it is only for LeaderElected type 
-                EDirection m_fromDirection;
+                EDirection m_toDirection;
             };
 
             void Run();
-            void SendNodeIdMessage(unsigned p_nodeId);
+            void SendNodeIdMessage(unsigned p_nodeId, EDirection p_direction);
             void SendLeaderElectedMessage(unsigned p_nodeId, EDirection p_direction);
 
             CUnit& GetUnit(EDirection p_direction);
@@ -60,7 +60,6 @@ namespace RING
             CUnit m_leftUnit;
 
             EState m_state = EState::Candidate;
-            EDirection m_direction = EDirection::Right;
             std::queue<SMessage> m_queue;
             std::mutex m_mutex;
             std::condition_variable m_conVariable;
