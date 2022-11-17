@@ -21,7 +21,7 @@ namespace RING
             default:
                 return EDirection::Both;
         }
-        
+
         return EDirection::Both;
     }
 }

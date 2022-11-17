@@ -1,5 +1,5 @@
 #include "CNode.h"
-#include "CLogger.h"
+#include "loggers.h"
 
 #include <string>
 #include <thread>
@@ -12,10 +12,12 @@ using namespace std;
 
 int main(int argc, char* argv[])
 {
+    const auto isLogging = argc > 1 && strcmp(argv[1], "message_count") == 0 ? false : true;
+
     ifstream infile("topologies.txt");
     string line;
     vector<vector<unsigned>> topologies;
-    
+
     const unsigned testSize = 1;
     auto numberOfTests = 0u;
 
@@ -39,19 +41,37 @@ int main(int argc, char* argv[])
 
     auto portNumNow = defaultPortNum;
 
-	const auto getAddress = [ip](unsigned p_port)
+	const auto getAddress = [&](unsigned p_port)
 	{
 		stringstream ss;
 		ss << ip << ":" << p_port;
 		return ss.str();
 	};
 
+    const auto getLogger = [isLogging](unsigned p_nodeCount) -> shared_ptr<CLoggerBase>
+    {
+        if (!isLogging)
+            return make_shared<SMessageCountLogger>(p_nodeCount);
+
+        static const auto getLogFilename = []()
+        {
+            static auto num = 0u;
+
+            stringstream ss;
+            ss << "log-" << num;
+            return ss.str();
+        };
+
+        return make_shared<CLogger>(getLogFilename());
+    };
+
 	for (const auto topology : topologies)
     {
-        vector<unique_ptr<CNode> > ring;
-        auto logger = make_shared<CLogger>("log");
-
         const auto nodeCount = topology.size();
+
+        auto logger = getLogger(nodeCount);
+
+        vector<unique_ptr<CNode> > ring;
 
         for (auto i = 0u; i < nodeCount; ++i)
         {

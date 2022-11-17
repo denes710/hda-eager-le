@@ -2,7 +2,7 @@
 #define RING_CNODE_H
 
 #include "CUnit.h"
-#include "CLogger.h"
+#include "loggers.h"
 
 #include <condition_variable>
 #include <mutex>
@@ -16,7 +16,7 @@ namespace RING
     {
         public:
             CNode(unsigned p_nodeId,
-                    const std::shared_ptr<CLogger>& p_logger,
+                    const std::shared_ptr<CLoggerBase>& p_logger,
                     const std::string& p_rightSkeletonAddress,
                     const std::string& p_leftSkeletonAddress,
                     const CUnit::SNeighbour& p_rightNeighbour,

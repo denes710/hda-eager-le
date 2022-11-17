@@ -6,7 +6,7 @@ using namespace std;
 using namespace std::placeholders;
 
 CNode::CNode(unsigned p_nodeId,
-        const shared_ptr<CLogger>& p_logger,
+        const shared_ptr<CLoggerBase>& p_logger,
         const std::string& p_rightSkeletonAddress,
         const std::string& p_leftSkeletonAddress,
         const CUnit::SNeighbour& p_rightNeighbour,
@@ -116,7 +116,7 @@ CUnit& CNode::GetUnit(EDirection p_direction)
         case EDirection::Left:
             return m_leftUnit;
     }
-    
+
     return m_rightUnit;
 }
 

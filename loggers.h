@@ -3,6 +3,7 @@
 
 #include "EDirection.h"
 
+#include <atomic>
 #include <fstream>
 #include <string>
 #include <mutex>
@@ -13,14 +14,21 @@
 
 namespace RING
 {
-    class CLogger
+    class CLoggerBase
+    {
+        public:
+            virtual void AddLog(unsigned p_nodeId, unsigned p_senderId, unsigned p_receiverId) = 0;
+            virtual ~CLoggerBase() = default;
+    };
+
+    class CLogger : public CLoggerBase
     {
         public:                
             CLogger(const std::string& p_filename)
                 : m_outfile(p_filename)
             {}
 
-            void AddLog(unsigned p_nodeId, unsigned p_senderId, unsigned p_receiverId)
+            void AddLog(unsigned p_nodeId, unsigned p_senderId, unsigned p_receiverId) override
             {
                 std::lock_guard<std::mutex> guard(m_mutex);
 
@@ -39,6 +47,25 @@ namespace RING
         private:
             std::ofstream m_outfile;
             std::mutex m_mutex;
+    };
+
+    struct SMessageCountLogger : public CLoggerBase
+    {
+        SMessageCountLogger(unsigned p_nodeCount)
+            : m_nodeCount(p_nodeCount)
+        {}
+
+        ~SMessageCountLogger()
+        { std::cout << "Nodes num: " << m_nodeCount << " message count: " <<  m_messageCount << std::endl; }
+        
+        void AddLog(unsigned p_nodeId, unsigned p_senderId, unsigned) override
+        {
+            if (p_nodeId == p_senderId)
+                ++m_messageCount;
+        }
+
+        std::atomic<unsigned> m_messageCount = 0;
+        const unsigned m_nodeCount = 0;
     };
 }
 

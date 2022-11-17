@@ -2,7 +2,7 @@
 #define RING_CUNIT_H
 
 #include "EDirection.h"
-#include "CLogger.h"
+#include "loggers.h"
 
 #include <string>
 #include <thread>
@@ -30,7 +30,7 @@ namespace RING
         
             using TCallback = std::function<void(EMessageType, unsigned)>;
             CUnit(unsigned p_nodeId,
-                    const std::shared_ptr<CLogger>& p_logger,
+                    const std::shared_ptr<CLoggerBase>& p_logger,
                     const std::string& p_skeletonAddress,
                     const SNeighbour& p_neighbour,
                     EDirection p_direction,
@@ -69,7 +69,7 @@ namespace RING
             void StartStub();
 
         private:
-            std::shared_ptr<CLogger> m_logger;
+            std::shared_ptr<CLoggerBase> m_logger;
 
             const unsigned m_nodeId;
             const std::string m_skeletonAddress;
