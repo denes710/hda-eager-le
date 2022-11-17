@@ -30,8 +30,7 @@ namespace RING
 
             void ReceiveMessage(CUnit::EMessageType p_type, unsigned p_nodeId, EDirection p_direction);
 
-            ~CNode()
-            { m_thread.join(); }
+            ~CNode();
 
         private:
             enum class EState
@@ -65,6 +64,8 @@ namespace RING
             std::queue<SMessage> m_queue;
             std::mutex m_mutex;
             std::condition_variable m_conVariable;
+
+            std::vector<std::unique_ptr<std::thread>> m_senderThreads;
             std::thread m_thread;
     };
 }

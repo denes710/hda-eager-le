@@ -33,12 +33,11 @@ int main(int argc, char* argv[])
         topologies.push_back(ids);
         ++numberOfTests;
     }
-    
-    // FIXME randoms shuffle
 
-	const auto defaultPortNum = 40000u;
-    auto portNumNow = defaultPortNum;
 	const auto ip = "127.0.0.1";
+	const auto defaultPortNum = 40000u;
+
+    auto portNumNow = defaultPortNum;
 
 	const auto getAddress = [ip](unsigned p_port)
 	{
@@ -49,15 +48,16 @@ int main(int argc, char* argv[])
 
 	for (const auto topology : topologies)
     {
-        vector<shared_ptr<CNode> > ring;
+        vector<unique_ptr<CNode> > ring;
         auto logger = make_shared<CLogger>("log");
+
         const auto nodeCount = topology.size();
 
         for (auto i = 0u; i < nodeCount; ++i)
         {
             const auto rightOrderId = (i + 1) % nodeCount;
             const auto leftOrderId = (i + nodeCount - 1) % nodeCount;
-            ring.emplace_back(make_shared<CNode>(topology[i],
+            ring.emplace_back(make_unique<CNode>(topology[i],
                         logger,
                         getAddress(portNumNow + i), // right skeleton addr
                         getAddress(portNumNow + i + nodeCount), // left skeleton addr
@@ -68,13 +68,13 @@ int main(int argc, char* argv[])
         portNumNow = portNumNow + 2 * nodeCount;
 
         // starting skeletons
-        for (auto node : ring)
+        for (auto& node : ring)
             node->StartSkeleton();
         // starting stubs
-        for (auto node : ring)
+        for (auto& node : ring)
             node->StartStub();
         // starting stubs
-        for (auto node : ring)
+        for (auto& node : ring)
             node->RunHDAEagerLE();
     }
 

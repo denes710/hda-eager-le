@@ -24,9 +24,7 @@ void CUnit::SendNodeId(unsigned p_nodeId)
 
     // Returns results based on RPC status
     if (!status.ok())
-    {
-        throw exception();
-    }
+        std::cerr << "NodeId message sending failed!" << std::endl;
 }
 
 Status CUnit::sendNodeId(ServerContext* p_context,
@@ -89,7 +87,7 @@ void CUnit::SendLeaderElected(unsigned p_leaderId)
 
     // Returns results based on RPC status
     if (!status.ok())
-        throw exception();
+        std::cerr << "Leader election message sending failed!" << std::endl;
 }
 
 Status CUnit::sendLeaderElected(ServerContext* p_context,
@@ -102,4 +100,11 @@ Status CUnit::sendLeaderElected(ServerContext* p_context,
 
     // message processed
     return Status::OK;
+}
+
+CUnit::~CUnit()
+{
+    m_skeleton->Shutdown();
+    if (m_thread->joinable())
+        m_thread->join();
 }

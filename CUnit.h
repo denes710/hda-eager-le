@@ -43,6 +43,8 @@ namespace RING
                 , m_logger(p_logger)
             {}
 
+            ~CUnit();
+
             // send messag to neighbour stub
             void SendNodeId(unsigned p_nodeId);
 
@@ -67,18 +69,21 @@ namespace RING
             void StartStub();
 
         private:
-            //FIXME make it readable
+            std::shared_ptr<CLogger> m_logger;
+
             const unsigned m_nodeId;
-            const SNeighbour m_neighbour;
-            std::unique_ptr<ring::Unit::Stub> m_stub;
-            std::shared_ptr<grpc::Channel> m_channel;
             const std::string m_skeletonAddress;
-            std::unique_ptr<std::thread> m_thread;
-            std::unique_ptr<grpc::Server> m_skeleton;
+            const SNeighbour m_neighbour;
+
             bool m_initialized = false;
             const EDirection m_direction;
             const TCallback m_callback;
-            std::shared_ptr<CLogger> m_logger;
+
+            std::shared_ptr<grpc::Channel> m_channel;
+            std::unique_ptr<ring::Unit::Stub> m_stub;
+
+            std::unique_ptr<grpc::Server> m_skeleton;
+            std::unique_ptr<std::thread> m_thread;
     };
 }
 

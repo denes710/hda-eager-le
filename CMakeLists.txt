@@ -4,6 +4,8 @@ cmake_minimum_required(VERSION 3.15)
 # Project
 project(ring)
 
+set (CMAKE_CXX_STANDARD 17)
+
 # Protobuf
 set(protobuf_MODULE_COMPATIBLE TRUE)
 find_package(Protobuf CONFIG REQUIRED)

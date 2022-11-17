@@ -84,6 +84,7 @@ void CNode::Run()
                         else
                         {
                             m_state = EState::Leader;
+                            running = false;
                             SendLeaderElectedMessage(m_nodeId, EDirection::Both);
                         }
                         break;
@@ -91,13 +92,16 @@ void CNode::Run()
                         SendNodeIdMessage(message.m_nodeId);
                         break;
                     default:
-                        break; //FIXME exception maybe?
+                        break;
                 }
                 break;
             case CUnit::EMessageType::LeaderElected:
-                SendLeaderElectedMessage(message.m_nodeId, GetInverse(message.m_fromDirection));
+                if (m_state == EState::Terminated)
+                    return;
+
                 m_state = EState::Terminated;
                 running = false;
+                SendLeaderElectedMessage(message.m_nodeId, GetInverse(message.m_fromDirection));
                 break;
         }
     }
@@ -118,9 +122,8 @@ CUnit& CNode::GetUnit(EDirection p_direction)
 
 void CNode::SendNodeIdMessage(unsigned p_nodeId)
 {
-    thread tmp([&, direction = m_direction, nodeId = p_nodeId]()
-    { GetUnit(direction).SendNodeId(nodeId); });
-    tmp.detach();
+    m_senderThreads.emplace_back(make_unique<thread>([&, direction = m_direction, nodeId = p_nodeId]()
+    { GetUnit(direction).SendNodeId(nodeId); }));
     m_direction = GetInverse(m_direction);
 }
 
@@ -128,17 +131,27 @@ void CNode::SendLeaderElectedMessage(unsigned p_nodeId, EDirection p_direction)
 {
     if (p_direction == EDirection::Both)
     {
-        thread tmpRight([&, nodeId = p_nodeId]()
-        { m_rightUnit.SendLeaderElected(nodeId); });
-        tmpRight.detach();
-        thread tmpLeft([&, nodeId = p_nodeId]()
-        { m_leftUnit.SendLeaderElected(nodeId); });
-        tmpLeft.detach();
+        m_senderThreads.emplace_back(make_unique<thread>([&, nodeId = p_nodeId]()
+        { m_rightUnit.SendLeaderElected(nodeId); }));
+
+        m_senderThreads.emplace_back(make_unique<thread>([&, nodeId = p_nodeId]()
+        { m_leftUnit.SendLeaderElected(nodeId); }));
 
         return;
     }
 
-    thread tmp([&, direction = m_direction, nodeId = p_nodeId]()
-    { GetUnit(direction).SendLeaderElected(nodeId); });
-    tmp.detach();
+    m_senderThreads.emplace_back(make_unique<thread>([&, direction = m_direction, nodeId = p_nodeId]()
+    { GetUnit(direction).SendLeaderElected(nodeId); }));
+}
+
+CNode::~CNode()
+{
+    if (m_thread.joinable())
+        m_thread.join();
+
+    for (auto& senderThread : m_senderThreads)
+    {
+        if (senderThread->joinable())
+            senderThread->join();
+    }
 }
