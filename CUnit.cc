@@ -15,16 +15,11 @@ void CUnit::SendNodeId(unsigned p_nodeId)
     request.set_node_id(p_nodeId);
 
     // container for server response
-    // FIXME perhaps it is not necessary
     ring::sendNodeIdResponse reply;
     // Context can be used to send meta data to server or modify RPC behaviour
     ClientContext context;
     // Actual Remote Procedure Call
     const auto status = m_stub->sendNodeId(&context, request, &reply);
-
-    // Returns results based on RPC status
-    if (!status.ok())
-        std::cerr << "NodeId message sending failed!" << std::endl;
 }
 
 Status CUnit::sendNodeId(ServerContext* p_context,
@@ -78,16 +73,11 @@ void CUnit::SendLeaderElected(unsigned p_leaderId)
     request.set_leader_id(p_leaderId);
 
     // container for server response
-    // FIXME perhaps it is not necessary
     ring::sendLeaderElectedResponse reply;
     // Context can be used to send meta data to server or modify RPC behaviour
     ClientContext context;
     // Actual Remote Procedure Call
     const auto status = m_stub->sendLeaderElected(&context, request, &reply);
-
-    // Returns results based on RPC status
-    if (!status.ok())
-        std::cerr << "Leader election message sending failed!" << std::endl;
 }
 
 Status CUnit::sendLeaderElected(ServerContext* p_context,
