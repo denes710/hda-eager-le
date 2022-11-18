@@ -49,23 +49,25 @@ namespace RING
             std::mutex m_mutex;
     };
 
-    struct SMessageCountLogger : public CLoggerBase
+    class CMessageCountLogger : public CLoggerBase
     {
-        SMessageCountLogger(unsigned p_nodeCount)
-            : m_nodeCount(p_nodeCount)
-        {}
+        public:
+            CMessageCountLogger(unsigned p_nodeCount)
+                : m_nodeCount(p_nodeCount)
+            {}
 
-        ~SMessageCountLogger()
-        { std::cout << "Nodes num: " << m_nodeCount << " message count: " <<  m_messageCount << std::endl; }
-        
-        void AddLog(unsigned p_nodeId, unsigned p_senderId, unsigned) override
-        {
-            if (p_nodeId == p_senderId)
-                ++m_messageCount;
-        }
+            ~CMessageCountLogger()
+            { std::cout << "Nodes num: " << m_nodeCount << " message count: " <<  m_messageCount << std::endl; }
+            
+            void AddLog(unsigned p_nodeId, unsigned p_senderId, unsigned) override
+            {
+                if (p_nodeId == p_senderId)
+                    ++m_messageCount;
+            }
 
-        std::atomic<unsigned> m_messageCount = 0;
-        const unsigned m_nodeCount = 0;
+        private:
+            std::atomic<unsigned> m_messageCount = 0;
+            const unsigned m_nodeCount = 0;
     };
 }
 

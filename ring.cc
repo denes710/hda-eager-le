@@ -5,41 +5,113 @@
 #include <thread>
 #include <vector>
 #include <sstream>
+#include <numeric>
 
 using namespace RING;
 
 using namespace std;
 
-int main(int argc, char* argv[])
+struct SCommandLineArgs
 {
-    const auto isLogging = argc > 1 && strcmp(argv[1], "message_count") == 0 ? false : true;
-
-    ifstream infile("topologies.txt");
-    string line;
-    vector<vector<unsigned>> topologies;
-
-    const unsigned testSize = 1;
-    auto numberOfTests = 0u;
-
-    while (getline(infile, line) && numberOfTests < testSize)
+    enum class ELoggerType
     {
-        std::cout << line << std::endl;
-        stringstream ss(line);
-        vector<unsigned> ids;
+        MessageLogger,
+        MessageCountLogger
+    };
 
-        string tmp;
+    enum class EInputType
+    {
+        FromFile,
+        FromCommandLine
+    };
 
-        while(getline(ss, tmp, ','))
-            ids.push_back(stoul(tmp));
-
-        topologies.push_back(ids);
-        ++numberOfTests;
+    SCommandLineArgs(int p_argc, char* p_argv[])
+        : m_loggerType(GetLoggerType(p_argv[1]))
+        , m_inputType(GetInputType(p_argv[2]))
+    {
+        switch (m_inputType)
+        {
+            case EInputType::FromFile:
+                ReadTopologiesFromFile(p_argv[3]);
+                break;
+            case EInputType::FromCommandLine:
+                vector<unsigned> ids;
+                for (auto i = 3u; i < p_argc; ++i)
+                    ids.push_back(stoul(p_argv[i]));
+                m_topologies.push_back(ids);
+                break;
+        }
     }
 
-	const auto ip = "127.0.0.1";
-	const auto defaultPortNum = 40000u;
+    static ELoggerType GetLoggerType(const string& p_loggerType)
+    {
+        if (p_loggerType == "message_count")
+            return ELoggerType::MessageCountLogger;
+        else if (p_loggerType == "message_logger")
+            return ELoggerType::MessageLogger;
+        throw exception();
+    }
 
-    auto portNumNow = defaultPortNum;
+    static EInputType GetInputType(const string& p_inputType)
+    {
+        if (p_inputType == "from_file")
+            return EInputType::FromFile;
+        else if (p_inputType == "command_line")
+            return EInputType::FromCommandLine;
+        throw exception();
+    }
+
+    static unsigned GetArgsNum(int p_argc)
+    { return p_argc - s_numOfArgsBeforeInput; }
+
+    static bool CheckArgsNum(int p_argc)
+    {
+        if (p_argc >= s_minArgs)
+            return true;
+
+        cout << "There are no enough args for running!" << endl;
+        cout << "[message_logger/message_count] [from_file/command_line] [filename/topology]" << endl;
+        return false;
+    }
+
+    void ReadTopologiesFromFile(const string& p_filename)
+    {
+        // FIXME error if something not good
+        ifstream infile(p_filename);
+        auto numberOfTests = 0u;
+        string line;
+
+        while (getline(infile, line))
+        {
+            stringstream ss(line);
+            vector<unsigned> ids;
+            string tmp;
+
+            while(getline(ss, tmp, ','))
+                ids.push_back(stoul(tmp));
+
+            m_topologies.push_back(ids);
+        }
+    }
+
+    static const unsigned s_numOfArgsBeforeInput = 2;
+    static const unsigned s_minArgs = 4;
+
+    const ELoggerType m_loggerType;
+    const EInputType m_inputType;
+
+    vector<vector<unsigned>> m_topologies;
+};
+
+int main(int argc, char* argv[])
+{
+    if (!SCommandLineArgs::CheckArgsNum(argc))
+        return 0;
+
+    SCommandLineArgs args(argc, argv);
+
+	const auto ip = "127.0.0.1";
+	const auto defaultPortNum = 30000u;
 
 	const auto getAddress = [&](unsigned p_port)
 	{
@@ -48,10 +120,10 @@ int main(int argc, char* argv[])
 		return ss.str();
 	};
 
-    const auto getLogger = [isLogging](unsigned p_nodeCount) -> shared_ptr<CLoggerBase>
+    const auto getLogger = [&](unsigned p_nodeCount) -> shared_ptr<CLoggerBase>
     {
-        if (!isLogging)
-            return make_shared<SMessageCountLogger>(p_nodeCount);
+        if (args.m_loggerType == SCommandLineArgs::ELoggerType::MessageCountLogger)
+            return make_shared<CMessageCountLogger>(p_nodeCount);
 
         static const auto getLogFilename = []()
         {
@@ -65,8 +137,14 @@ int main(int argc, char* argv[])
         return make_shared<CLogger>(getLogFilename());
     };
 
-	for (const auto topology : topologies)
+    auto portNumNow = defaultPortNum;
+
+	for (const auto topology : args.m_topologies)
     {
+        cout << accumulate(topology.begin(), topology.end(), string{},
+            [](string& p_result, const unsigned& p_elem) -> decltype(auto)
+                { return p_result += to_string(p_elem) + " "; }) << endl;
+
         const auto nodeCount = topology.size();
 
         auto logger = getLogger(nodeCount);
@@ -85,7 +163,7 @@ int main(int argc, char* argv[])
                         CUnit::SNeighbour{topology[leftOrderId], getAddress(portNumNow + leftOrderId + nodeCount)})); // left neighbor
         }
 
-        portNumNow = portNumNow + 2 * nodeCount;
+        portNumNow = portNumNow + 2 * nodeCount + 1;
 
         // starting skeletons
         for (auto& node : ring)
