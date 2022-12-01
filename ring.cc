@@ -137,8 +137,6 @@ int main(int argc, char* argv[])
         return make_shared<CLogger>(getLogFilename());
     };
 
-    auto portNumNow = defaultPortNum;
-
 	for (const auto topology : args.m_topologies)
     {
         cout << accumulate(topology.begin(), topology.end(), string{},
@@ -157,13 +155,11 @@ int main(int argc, char* argv[])
             const auto leftOrderId = (i + nodeCount - 1) % nodeCount;
             ring.emplace_back(make_unique<CNode>(topology[i],
                         logger,
-                        getAddress(portNumNow + i), // right skeleton addr
-                        getAddress(portNumNow + i + nodeCount), // left skeleton addr
-                        CUnit::SNeighbour{topology[rightOrderId], getAddress(portNumNow + rightOrderId)}, // right neighbor
-                        CUnit::SNeighbour{topology[leftOrderId], getAddress(portNumNow + leftOrderId + nodeCount)})); // left neighbor
+                        getAddress(defaultPortNum + i), // right skeleton addr
+                        getAddress(defaultPortNum + i + nodeCount), // left skeleton addr
+                        CUnit::SNeighbour{topology[rightOrderId], getAddress(defaultPortNum + rightOrderId)}, // right neighbor
+                        CUnit::SNeighbour{topology[leftOrderId], getAddress(defaultPortNum + leftOrderId + nodeCount)})); // left neighbor
         }
-
-        portNumNow = portNumNow + 2 * nodeCount + 1;
 
         // starting skeletons
         for (auto& node : ring)
