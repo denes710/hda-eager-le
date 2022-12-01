@@ -33,12 +33,10 @@ namespace RING
                     const std::shared_ptr<CLoggerBase>& p_logger,
                     const std::string& p_skeletonAddress,
                     const SNeighbour& p_neighbour,
-                    EDirection p_direction,
                     const TCallback& p_callback)
                 : m_nodeId(p_nodeId)
                 , m_skeletonAddress(p_skeletonAddress)
                 , m_neighbour(p_neighbour)
-                , m_direction(p_direction)
                 , m_callback(p_callback)
                 , m_logger(p_logger)
             {}
@@ -76,7 +74,6 @@ namespace RING
             const SNeighbour m_neighbour;
 
             bool m_initialized = false;
-            const EDirection m_direction;
             const TCallback m_callback;
 
             std::shared_ptr<grpc::Channel> m_channel;

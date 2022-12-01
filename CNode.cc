@@ -16,13 +16,11 @@ CNode::CNode(unsigned p_nodeId,
             p_logger,
             p_rightSkeletonAddress,
             p_rightNeighbour,
-            EDirection::Left,
             bind(&CNode::ReceiveMessage, this, _1, _2, EDirection::Right))
     , m_leftUnit(m_nodeId,
             p_logger,
             p_leftSkeletonAddress,
             p_leftNeighbour,
-            EDirection::Right,
             bind(&CNode::ReceiveMessage, this, _1, _2, EDirection::Left))
 {}
 
@@ -75,7 +73,7 @@ void CNode::Run()
                     case EState::Candidate:
                         if (message.m_nodeId > m_nodeId)
                         {
-                            SendNodeIdMessage(m_nodeId, message.m_toDirection);
+                            SendNodeIdMessage(m_nodeId, GetInverse(message.m_toDirection));
                         }
                         else if (message.m_nodeId < m_nodeId)
                         {
@@ -102,6 +100,7 @@ void CNode::Run()
                 m_state = EState::Terminated;
                 running = false;
                 SendLeaderElectedMessage(message.m_nodeId, message.m_toDirection);
+
                 break;
         }
     }
@@ -122,8 +121,8 @@ CUnit& CNode::GetUnit(EDirection p_direction)
 
 void CNode::SendNodeIdMessage(unsigned p_nodeId, EDirection p_direction)
 {
-    m_senderThreads.emplace_back(make_unique<thread>([&, direction = p_direction, nodeId = p_nodeId]()
-    { GetUnit(direction).SendNodeId(nodeId); }));
+    m_senderThreads.emplace_back(make_unique<thread>(
+    [&, direction = p_direction, nodeId = p_nodeId](){ GetUnit(direction).SendNodeId(nodeId); }));
 }
 
 void CNode::SendLeaderElectedMessage(unsigned p_nodeId, EDirection p_direction)
